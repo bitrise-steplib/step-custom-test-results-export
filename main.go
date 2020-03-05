@@ -25,11 +25,11 @@ func main() {
 
 	matches, err := filepath.Glob(stepConf.SearchPath)
 	if err != nil {
-		failf("Invalid search path %s, error: %s", stepConf.SearchPath, err)
+		failf("Invalid search path %s: %s", stepConf.SearchPath, err)
 	}
 
 	if len(matches) < 1 {
-		failf("Search path did not match any files, path: %s", stepConf.SearchPath)
+		failf("Search path %s did not match any files", stepConf.SearchPath)
 	}
 
 	if len(matches) > 1 {
@@ -40,8 +40,6 @@ func main() {
 	exporter := testresultexport.NewExporter(stepConf.TestResultsDir)
 
 	if err := exporter.ExportTest(stepConf.TestName, match); err != nil {
-		failf("Failed to export test result, error: %s", err)
+		failf("Failed to export test result: %s", err)
 	}
-
-	os.Exit(0)
 }
