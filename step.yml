@@ -5,7 +5,7 @@ summary: |
 description: |
   This step is used to search for test results and to export them for the 'Deploy to Bitrise.io' step. The deploy step can then be used to pick up results and import them into the testing add-on.
 website: https://github.com/bitrise-steplib/step-custom-test-results-export
-source_code_url: https://github.com/bitrise-steplib/step-custom-test-results-export
+source_code_url: https://github.com/bitrise-steplib/step-custom-test-results-export.git
 support_url: https://github.com/bitrise-steplib/step-custom-test-results-export/issues
 host_os_tags:
   - osx-10.10
