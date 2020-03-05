@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/bitrise-io/go-steputils/stepconf"
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-steplib/bitrise-step-custom-test-results-export/testresultexport"
 )
@@ -33,7 +35,14 @@ func main() {
 	}
 
 	if len(matches) > 1 {
-		log.Warnf("Search path matched more than one file, will use the first match, matches: %s", matches)
+		log.Warnf("Search path matched more than one file, will use the first match:")
+		for i, m := range matches {
+			template := fmt.Sprintf("- %s\n", m)
+			if i == 0 {
+				template = colorstring.Green(template)
+			}
+			log.Warnf(template)
+		}
 	}
 
 	match := matches[0]

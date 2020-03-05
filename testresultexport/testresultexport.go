@@ -3,9 +3,11 @@ package testresultexport
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/bitrise-io/go-utils/command"
+	"github.com/bitrise-io/go-utils/fileutil"
 )
 
 const (
@@ -38,10 +40,11 @@ func NewExporter(exportPath string) *Exporter {
 		ExportPath: exportPath,
 		MkdirAll:   os.MkdirAll,
 		GenerateTestInfoFile: func(dir string, data []byte) error {
-			return generateTestInfoFile(dir, data)
+			pth := filepath.Join(dir, ResultDescriptorFileName)
+			return fileutil.WriteJSONToFile(pth, data)
 		},
 		Copy: func(src, dst string) error {
-			return copy(src, dst)
+			return command.CopyFile(src, dst)
 		},
 	}
 
@@ -71,53 +74,5 @@ func (e *Exporter) ExportTest(name string, testResultPath string) error {
 		return err
 	}
 
-	err = e.Copy(testResultPath, testResultExportName)
-
-	return err
-}
-
-func copy(src, dst string) error {
-	sourceFileStat, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-
-	if !sourceFileStat.Mode().IsRegular() {
-		return fmt.Errorf("%s is not a regular file", src)
-	}
-
-	source, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	destination, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer destination.Close()
-	_, err = io.Copy(destination, source)
-	return err
-}
-
-func generateTestInfoFile(dir string, data []byte) error {
-	f, err := os.Create(filepath.Join(dir, ResultDescriptorFileName))
-	if err != nil {
-		return err
-	}
-
-	if _, err := f.Write(data); err != nil {
-		return err
-	}
-
-	if err := f.Sync(); err != nil {
-		return err
-	}
-
-	if err := f.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return e.Copy(testResultPath, testResultExportName)
 }
