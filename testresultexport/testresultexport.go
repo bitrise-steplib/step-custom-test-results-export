@@ -44,7 +44,7 @@ func NewExporter(exportPath string) *Exporter {
 			return fileutil.WriteJSONToFile(pth, data)
 		},
 		Copy: func(src, dst string) error {
-			return command.CopyFile(src, dst)
+			return command.CopyDir(src, dst, false)
 		},
 	}
 

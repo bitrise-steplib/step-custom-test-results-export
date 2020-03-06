@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-steplib/bitrise-step-custom-test-results-export/testresultexport"
+	"github.com/ryanuber/go-glob"
 )
 
 func failf(format string, args ...interface{}) {
@@ -25,17 +27,30 @@ func main() {
 
 	log.SetEnableDebugLog(stepConf.VerboseLog)
 
-	matches, err := filepath.Glob(stepConf.SearchPath)
+	matches := []string{}
+	basePath := strings.Split(stepConf.BasePath, "*")[0]
+	err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if glob.Glob(stepConf.Pattern, path) {
+			matches = append(matches, path)
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		failf("Invalid search path %s: %s", stepConf.SearchPath, err)
+		failf("Invalid base path %s: %s", stepConf.BasePath, err)
 	}
 
 	if len(matches) < 1 {
-		failf("Search path %s did not match any files", stepConf.SearchPath)
+		failf("Pattern %s did not match any files within path %s", stepConf.Pattern, stepConf.BasePath)
 	}
 
 	if len(matches) > 1 {
-		log.Warnf("Search path matched more than one file, will use the first match:")
+		log.Warnf("Pattern matched more than one file, will use the first match:")
 		for i, m := range matches {
 			template := fmt.Sprintf("- %s\n", m)
 			if i == 0 {

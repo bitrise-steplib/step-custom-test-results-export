@@ -31,12 +31,19 @@ inputs:
       is_expand: true
       is_required: true
       value_options: []
-  - search_path:
+  - base_path:
     opts:
-      title: "Search path for custom test results"
+      title: "Path where custom test results reside"
+      summary: "Path where the custom test results reside, you can provide a file path or a directory path and filter for files using a pattern"
+      is_expand: true
+      is_required: true
+      value_options: []
+  - pattern:
+    opts:
+      title: "Test result search pattern"
       summary: A glob used to match a single test report.
       description: |
-        This glob should match a single file.
+        This glob should match a single file within the provided base path.
         If it matches multiple files, the step will produce a warning displaying all matches.
         The matched file should be in a supported format.
       is_expand: true
