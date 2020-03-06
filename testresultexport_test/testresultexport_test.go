@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bitrise-steplib/bitrise-step-custom-test-results-export/testresultexport"
+	"github.com/bitrise-steplib/step-custom-test-results-export/testresultexport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

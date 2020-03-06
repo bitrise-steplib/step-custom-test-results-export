@@ -17,8 +17,8 @@ workflows:
     - go-test:
         inputs:
         - packages: |-
-            github.com/bitrise-steplib/bitrise-step-custom-test-results-export/testresultexport
-            github.com/bitrise-steplib/bitrise-step-custom-test-results-export/testresultexport_test
+            github.com/bitrise-steplib/step-custom-test-results-export/testresultexport
+            github.com/bitrise-steplib/step-custom-test-results-export/testresultexport_test
     - change-workdir:
         title: Switch working dir to test / _tmp dir
         description: |-
