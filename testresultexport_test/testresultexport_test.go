@@ -1,6 +1,7 @@
 package testresultexport_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -57,5 +58,65 @@ func TestExportTestWritesTestResults(t *testing.T) {
 
 	// Assert
 	assert.Nil(t, err, "error should be nil")
+	mockFuncs.AssertExpectations(t)
+}
+
+func TestExportTestMkdirFails(t *testing.T) {
+	// Arrange
+	testName := "testName"
+	testResultPath := "testResultPath/Result.xml"
+	testExportPath := "testExportPath"
+	expectedTestFolder := "testExportPath/testName"
+	testError := fmt.Errorf("test error")
+
+	mockFuncs := new(MockFuncs)
+	mockFuncs.On("MkdirAll", expectedTestFolder, mock.Anything).Return(testError)
+
+	testSubject := testresultexport.Exporter{
+		ExportPath:           testExportPath,
+		Copy:                 mockFuncs.Copy,
+		GenerateTestInfoFile: mockFuncs.GenerateTestInfoFile,
+		MkdirAll:             mockFuncs.MkdirAll,
+	}
+
+	// Act
+	err := testSubject.ExportTest(testName, testResultPath)
+
+	// Assert
+	assert.EqualErrorf(t,
+		err,
+		fmt.Sprintf("skipping test result (%s): could not ensure unique export dir (%s): %s",
+			testResultPath,
+			expectedTestFolder,
+			testError),
+		"should throw the expected error",
+	)
+	mockFuncs.AssertExpectations(t)
+}
+
+func TestExportTestGenerateTestInfoFileFails(t *testing.T) {
+	// Arrange
+	testName := "testName"
+	testResultPath := "testResultPath/Result.xml"
+	testExportPath := "testExportPath"
+	expectedTestFolder := "testExportPath/testName"
+	testError := fmt.Errorf("test error")
+
+	mockFuncs := new(MockFuncs)
+	mockFuncs.On("MkdirAll", expectedTestFolder, mock.Anything).Return(nil)
+	mockFuncs.On("GenerateTestInfoFile", expectedTestFolder, mock.Anything).Return(testError)
+
+	testSubject := testresultexport.Exporter{
+		ExportPath:           testExportPath,
+		Copy:                 mockFuncs.Copy,
+		GenerateTestInfoFile: mockFuncs.GenerateTestInfoFile,
+		MkdirAll:             mockFuncs.MkdirAll,
+	}
+
+	// Act
+	err := testSubject.ExportTest(testName, testResultPath)
+
+	// Assert
+	assert.Equal(t, err, testError, "should throw the expected error")
 	mockFuncs.AssertExpectations(t)
 }
