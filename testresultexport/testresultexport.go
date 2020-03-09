@@ -56,9 +56,7 @@ func (e *Exporter) ExportTest(name string, testResultPath string) error {
 		Name: name,
 	}
 
-	testResultName := filepath.Base(testResultPath)
 	exportDir := filepath.Join(e.ExportPath, name)
-	testResultExportName := filepath.Join(exportDir, testResultName)
 
 	if err := e.MkdirAll(exportDir, os.ModePerm); err != nil {
 		return fmt.Errorf("skipping test result (%s): could not ensure unique export dir (%s): %s", testResultPath, exportDir, err)
@@ -68,5 +66,5 @@ func (e *Exporter) ExportTest(name string, testResultPath string) error {
 		return err
 	}
 
-	return e.Copy(testResultPath, testResultExportName)
+	return e.Copy(testResultPath, exportDir)
 }

@@ -39,7 +39,7 @@ func TestExportTestWritesTestResults(t *testing.T) {
 	testResultPath := "testResultPath/Result.xml"
 	testExportPath := "testExportPath"
 	expectedTestFolder := "testExportPath/testName"
-	expectedCopyPath := "testExportPath/testName/Result.xml"
+	expectedCopyPath := "testExportPath/testName"
 
 	mockFuncs := new(MockFuncs)
 	mockFuncs.On("MkdirAll", expectedTestFolder, mock.Anything).Return(nil)
