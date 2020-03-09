@@ -50,4 +50,3 @@ workflows:
         - base_path: ./
         - pattern: '*/*.xcresult'
         - example_step_input: Example Step Input's value
-    - deploy-to-bitrise-io: {}
