@@ -30,11 +30,13 @@ workflows:
         inputs:
         - path: ./_tmp
         - is_create_path: true
-    - git-clone:
+    - script:
+        title: Clone sample artifacts repository
         run_if: "true"
         inputs:
-        - repository_url: https://github.com/bitrise-io/sample-artifacts.git
-        - branch: master
+        - content: |-
+            rm -Rf ./*
+            git clone --branch master --depth 1 https://github.com/bitrise-io/sample-artifacts.git
     - path::./:
         title: Step Test
         description: |-
