@@ -1,7 +1,6 @@
 package testresultexport
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -30,7 +29,7 @@ type Exporter struct {
 	ExportPath string
 
 	MkdirAll             func(path string, perm os.FileMode) error
-	GenerateTestInfoFile func(dir string, data []byte) error
+	GenerateTestInfoFile func(dir string, data *TestInfo) error
 	Copy                 func(src, dst string) error
 }
 
@@ -39,7 +38,7 @@ func NewExporter(exportPath string) *Exporter {
 	e := Exporter{
 		ExportPath: exportPath,
 		MkdirAll:   os.MkdirAll,
-		GenerateTestInfoFile: func(dir string, data []byte) error {
+		GenerateTestInfoFile: func(dir string, data *TestInfo) error {
 			pth := filepath.Join(dir, ResultDescriptorFileName)
 			return fileutil.WriteJSONToFile(pth, data)
 		},
@@ -61,16 +60,11 @@ func (e *Exporter) ExportTest(name string, testResultPath string) error {
 	exportDir := filepath.Join(e.ExportPath, name)
 	testResultExportName := filepath.Join(exportDir, testResultName)
 
-	testInfoData, err := json.Marshal(testInfo)
-	if err != nil {
-		return err
-	}
-
 	if err := e.MkdirAll(exportDir, os.ModePerm); err != nil {
 		return fmt.Errorf("skipping test result (%s): could not ensure unique export dir (%s): %s", testResultPath, exportDir, err)
 	}
 
-	if err := e.GenerateTestInfoFile(exportDir, testInfoData); err != nil {
+	if err := e.GenerateTestInfoFile(exportDir, testInfo); err != nil {
 		return err
 	}
 

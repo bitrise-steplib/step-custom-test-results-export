@@ -24,7 +24,7 @@ func (m *MockFuncs) Copy(src string, dst string) error {
 	return args.Error(0)
 }
 
-func (m *MockFuncs) GenerateTestInfoFile(dir string, data []byte) error {
+func (m *MockFuncs) GenerateTestInfoFile(dir string, data *testresultexport.TestInfo) error {
 	args := m.Called(dir, data)
 	return args.Error(0)
 }
