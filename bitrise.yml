@@ -48,5 +48,6 @@ workflows:
         inputs:
         - test_name: test name
         - base_path: ./
-        - pattern: "*/*.xcresult"
+        - pattern: '*/*.xcresult'
         - example_step_input: Example Step Input's value
+    - deploy-to-bitrise-io: {}
