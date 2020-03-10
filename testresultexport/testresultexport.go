@@ -19,14 +19,9 @@ type TestInfo struct {
 	Name string `json:"test_name" yaml:"test_name"` // Test name
 }
 
-// ExporterInterface is an interface for exporting a test result
-type ExporterInterface interface {
-	ExportTest(name string, testResultPath string) error
-}
-
 // Exporter is an implementation of the ExporterInterface
-type exporter struct {
-	ExportPath string
+type Exporter struct {
+	exportPath string
 
 	mkdirAll             func(path string, perm os.FileMode) error
 	generateTestInfoFile func(dir string, data *TestInfo) error
@@ -34,9 +29,9 @@ type exporter struct {
 }
 
 // NewExporter instantiates a new exporter
-func NewExporter(exportPath string) ExporterInterface {
-	e := exporter{
-		ExportPath: exportPath,
+func NewExporter(exportPath string) *Exporter {
+	e := Exporter{
+		exportPath: exportPath,
 		mkdirAll:   os.MkdirAll,
 		generateTestInfoFile: func(dir string, data *TestInfo) error {
 			pth := filepath.Join(dir, ResultDescriptorFileName)
@@ -50,13 +45,28 @@ func NewExporter(exportPath string) ExporterInterface {
 	return &e
 }
 
+// SetMkdirAll sets mkdirAll
+func (e *Exporter) SetMkdirAll(mkdirAll func(path string, perm os.FileMode) error) {
+	e.mkdirAll = mkdirAll
+}
+
+// SetGenerateTestInfoFile sets generateTestInfoFile
+func (e *Exporter) SetGenerateTestInfoFile(generateTestInfoFile func(dir string, data *TestInfo) error) {
+	e.generateTestInfoFile = generateTestInfoFile
+}
+
+// SetCopy sets generateTestInfoFile
+func (e *Exporter) SetCopy(copy func(src, dst string) error) {
+	e.copy = copy
+}
+
 // ExportTest exports a test result with a given name
-func (e *exporter) ExportTest(name string, testResultPath string) error {
+func (e *Exporter) ExportTest(name string, testResultPath string) error {
 	testInfo := &TestInfo{
 		Name: name,
 	}
 
-	exportDir := filepath.Join(e.ExportPath, name)
+	exportDir := filepath.Join(e.exportPath, name)
 
 	if err := e.mkdirAll(exportDir, os.ModePerm); err != nil {
 		return fmt.Errorf("skipping test result (%s): could not ensure unique export dir (%s): %s", testResultPath, exportDir, err)

@@ -46,12 +46,10 @@ func TestExportTestWritesTestResults(t *testing.T) {
 	mockFuncs.On("Copy", testResultPath, expectedCopyPath).Return(nil)
 	mockFuncs.On("GenerateTestInfoFile", expectedTestFolder, mock.Anything).Return(nil)
 
-	testSubject := testresultexport.NewExporterMocked(
-		testExportPath,
-		mockFuncs.MkdirAll,
-		mockFuncs.GenerateTestInfoFile,
-		mockFuncs.Copy,
-	)
+	testSubject := testresultexport.NewExporter(testExportPath)
+	testSubject.SetMkdirAll(mockFuncs.MkdirAll)
+	testSubject.SetGenerateTestInfoFile(mockFuncs.GenerateTestInfoFile)
+	testSubject.SetCopy(mockFuncs.Copy)
 
 	// Act
 	err := testSubject.ExportTest(testName, testResultPath)
@@ -72,12 +70,10 @@ func TestExportTestMkdirFails(t *testing.T) {
 	mockFuncs := new(MockFuncs)
 	mockFuncs.On("MkdirAll", expectedTestFolder, mock.Anything).Return(testError)
 
-	testSubject := testresultexport.NewExporterMocked(
-		testExportPath,
-		mockFuncs.MkdirAll,
-		mockFuncs.GenerateTestInfoFile,
-		mockFuncs.Copy,
-	)
+	testSubject := testresultexport.NewExporter(testExportPath)
+	testSubject.SetMkdirAll(mockFuncs.MkdirAll)
+	testSubject.SetGenerateTestInfoFile(mockFuncs.GenerateTestInfoFile)
+	testSubject.SetCopy(mockFuncs.Copy)
 
 	// Act
 	err := testSubject.ExportTest(testName, testResultPath)
@@ -106,12 +102,10 @@ func TestExportTestGenerateTestInfoFileFails(t *testing.T) {
 	mockFuncs.On("MkdirAll", expectedTestFolder, mock.Anything).Return(nil)
 	mockFuncs.On("GenerateTestInfoFile", expectedTestFolder, mock.Anything).Return(testError)
 
-	testSubject := testresultexport.NewExporterMocked(
-		testExportPath,
-		mockFuncs.MkdirAll,
-		mockFuncs.GenerateTestInfoFile,
-		mockFuncs.Copy,
-	)
+	testSubject := testresultexport.NewExporter(testExportPath)
+	testSubject.SetMkdirAll(mockFuncs.MkdirAll)
+	testSubject.SetGenerateTestInfoFile(mockFuncs.GenerateTestInfoFile)
+	testSubject.SetCopy(mockFuncs.Copy)
 
 	// Act
 	err := testSubject.ExportTest(testName, testResultPath)
