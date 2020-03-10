@@ -25,24 +25,24 @@ type ExporterInterface interface {
 }
 
 // Exporter is an implementation of the ExporterInterface
-type Exporter struct {
+type exporter struct {
 	ExportPath string
 
-	MkdirAll             func(path string, perm os.FileMode) error
-	GenerateTestInfoFile func(dir string, data *TestInfo) error
-	Copy                 func(src, dst string) error
+	mkdirAll             func(path string, perm os.FileMode) error
+	generateTestInfoFile func(dir string, data *TestInfo) error
+	copy                 func(src, dst string) error
 }
 
 // NewExporter instantiates a new exporter
-func NewExporter(exportPath string) *Exporter {
-	e := Exporter{
+func NewExporter(exportPath string) ExporterInterface {
+	e := exporter{
 		ExportPath: exportPath,
-		MkdirAll:   os.MkdirAll,
-		GenerateTestInfoFile: func(dir string, data *TestInfo) error {
+		mkdirAll:   os.MkdirAll,
+		generateTestInfoFile: func(dir string, data *TestInfo) error {
 			pth := filepath.Join(dir, ResultDescriptorFileName)
 			return fileutil.WriteJSONToFile(pth, data)
 		},
-		Copy: func(src, dst string) error {
+		copy: func(src, dst string) error {
 			return command.CopyDir(src, dst, false)
 		},
 	}
@@ -51,20 +51,20 @@ func NewExporter(exportPath string) *Exporter {
 }
 
 // ExportTest exports a test result with a given name
-func (e *Exporter) ExportTest(name string, testResultPath string) error {
+func (e *exporter) ExportTest(name string, testResultPath string) error {
 	testInfo := &TestInfo{
 		Name: name,
 	}
 
 	exportDir := filepath.Join(e.ExportPath, name)
 
-	if err := e.MkdirAll(exportDir, os.ModePerm); err != nil {
+	if err := e.mkdirAll(exportDir, os.ModePerm); err != nil {
 		return fmt.Errorf("skipping test result (%s): could not ensure unique export dir (%s): %s", testResultPath, exportDir, err)
 	}
 
-	if err := e.GenerateTestInfoFile(exportDir, testInfo); err != nil {
+	if err := e.generateTestInfoFile(exportDir, testInfo); err != nil {
 		return err
 	}
 
-	return e.Copy(testResultPath, exportDir)
+	return e.copy(testResultPath, exportDir)
 }
