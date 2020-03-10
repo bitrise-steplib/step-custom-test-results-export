@@ -50,3 +50,19 @@ workflows:
         - base_path: ./
         - search_pattern: '*/*.xcresult'
         - example_step_input: Example Step Input's value
+    - script:
+        title: Check if export succeeded
+        inputs:
+        - content: |-
+            FIND_TEST_INFO="$(find $BITRISE_TEST_DEPLOY_DIR -name 'test-info.json' -print -quit)"
+            FIND_XCRESULT="$(find $BITRISE_TEST_DEPLOY_DIR -name 'xcresult3_multi_level_UI_tests.xcresult' -print -quit)"
+            if [ -n "$FIND_TEST_INFO" ] && [ -n "$FIND_XCRESULT" ]
+            then
+              echo "Found exported test results at:"
+              echo "- $FIND_TEST_INFO"
+              echo "- $FIND_XCRESULT"
+              exit 0
+            else
+              echo "Exported test results not found!"
+              exit 1
+            fi

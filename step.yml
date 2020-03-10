@@ -31,7 +31,7 @@ inputs:
       is_expand: true
       is_required: true
       value_options: []
-  - base_path:
+  - base_path: $BITRISE_SOURCE_DIR
     opts:
       title: "Path where custom test results reside"
       summary: "Path where the custom test results reside, you can provide a file path or a directory path and filter for files using a pattern"
