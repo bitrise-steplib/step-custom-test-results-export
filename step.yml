@@ -38,7 +38,7 @@ inputs:
       is_expand: true
       is_required: true
       value_options: []
-  - pattern:
+  - search_pattern:
     opts:
       title: "Test result search pattern"
       summary: A glob used to match a single test report.

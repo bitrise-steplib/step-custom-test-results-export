@@ -19,22 +19,22 @@ func failf(format string, args ...interface{}) {
 }
 
 func main() {
-	var stepConf Config
+	var stepConf config
 	if err := stepconf.Parse(&stepConf); err != nil {
-		failf("Config: %s", err)
+		failf("Issue with input: %s", err)
 	}
 	stepconf.Print(stepConf)
 
 	log.SetEnableDebugLog(stepConf.VerboseLog)
 
-	matches := []string{}
+	var matches []string
 	basePath := strings.Split(stepConf.BasePath, "*")[0]
 	err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if glob.Glob(stepConf.Pattern, path) {
+		if glob.Glob(stepConf.SearchPattern, path) {
 			matches = append(matches, path)
 		}
 
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	if len(matches) < 1 {
-		failf("Pattern %s did not match any files within path %s", stepConf.Pattern, stepConf.BasePath)
+		failf("Pattern %s did not match any files within path %s", stepConf.SearchPattern, stepConf.BasePath)
 	}
 
 	if len(matches) > 1 {

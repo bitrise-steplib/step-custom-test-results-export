@@ -48,5 +48,5 @@ workflows:
         inputs:
         - test_name: test name
         - base_path: ./
-        - pattern: '*/*.xcresult'
+        - search_pattern: '*/*.xcresult'
         - example_step_input: Example Step Input's value
