@@ -86,11 +86,11 @@ inputs:
   - search_pattern:
     opts:
       title: "Test result search pattern"
-      summary: A glob used to match a single test report.
+      summary: A glob used to match a single test report. 
       description: |
         This glob should match a single file within the provided base path.
         If it matches multiple files, the step will produce a warning displaying all matches.
-        The matched file should be in a supported format.
+        The matched file should be in a supported format. If you set a specific file path in the **Path where custom test results reside** input, set this value to *.
       is_expand: true
       is_required: true
       value_options: []
