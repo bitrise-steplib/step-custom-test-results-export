@@ -1,5 +1,5 @@
 title: |-
-  Export test results to the Test Reports add-on
+  Export test results to the Test reports add-on
 summary: |
   This Step is used to search for test results and export them for the **Deploy to Bitrise.io** Step which can export the results to the testing add-on.
 description: |
