@@ -79,7 +79,15 @@ inputs:
   - base_path: $BITRISE_SOURCE_DIR
     opts:
       title: "Path where custom test results reside"
-      summary: "Path where the custom test results reside, you can provide a file path or a directory path and filter for files using a pattern"
+      summary: "Path where the custom test results reside. You can provide a file path or a directory path and filter for files using a pattern."
+      description: |
+        "This is the base path where the Step will look for your test results. We recommend using a relative path to the results:
+
+        `app/build/test-results/testDemoDebugUnitTest/`
+        
+        or 
+        
+        `./app/build/test-results/testDemoDebugUnitTest/`
       is_expand: true
       is_required: true
       value_options: []
@@ -89,8 +97,15 @@ inputs:
       summary: A glob used to match a single test report. 
       description: |
         This glob should match a single file within the provided base path.
-        If it matches multiple files, the step will produce a warning displaying all matches.
+        If it matches multiple files, the Step will produce a warning displaying all matches.
         The matched file should be in a supported format. If you set a specific file path in the **Path where custom test results reside** input, set this value to *.
+        
+        **Examples**:
+        
+        Matching all files within the base path: `*`
+        
+        Matching all files within a given directory of the base path: `*/build/test-results/testDemoDebugUnitTest/*`
+        
       is_expand: true
       is_required: true
       value_options: []
