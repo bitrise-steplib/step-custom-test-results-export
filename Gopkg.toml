@@ -1,5 +1,9 @@
 [[constraint]]
   branch = "master"
+  name = "github.com/bitrise-io/testresultexport"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/bitrise-io/go-steputils"
 
 [[constraint]]
