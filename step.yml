@@ -17,11 +17,11 @@ description: |
 
   2. In the **Test result base path** input, set the path where your test results can be found.
 
-     This input determines where Bitrise will look for your test results. We recommend setting a folder here though you can also set a specific file path.
+     This input determines where Bitrise will look for your test results. We recommend setting a folder here, though you can also set a specific file path.
 
   3. In the **Test result search pattern** input, set a glob pattern that matches a single test result output file.
 
-     This search pattern is used to search every file and folder of the provided base path which was set in the **Test result base path** input. If there is more than one match, you will receive a warning and the step will export the first match.
+     This search pattern is used to search every file and folder of the provided base path which was set in the **Test result base path** input. If there is more than one match, you will receive a warning and the Step will export the first match.
 
      If you set a specific file path in the previous input, just set `*` here.
 
@@ -79,7 +79,7 @@ inputs:
   - base_path: $BITRISE_SOURCE_DIR
     opts:
       title: Test result base path
-      summary: Path where the step should look for custom test result files
+      summary: Path where the Step should look for custom test result files
       description: |
         You can provide a path to a single file or a directory path and filter for files using the **Test result search pattern** input.
 
@@ -100,7 +100,7 @@ inputs:
       description: |
         This glob should match a single file within the provided base path.
         If it matches multiple files, the Step will produce a warning displaying all matches.
-        The matched file should be in a supported format. If you set a specific file path in the **Test result base path** input, set this value to *.
+        The matched file should be in a supported format. If you set a specific file path in the **Test result base path** input, set this value to `*`.
         
         **Examples**:
         
