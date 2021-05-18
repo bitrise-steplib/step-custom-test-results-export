@@ -1,0 +1,16 @@
+# github.com/bitrise-io/go-steputils v0.0.0-20210514150206-5b6261447e77
+## explicit
+github.com/bitrise-io/go-steputils/stepconf
+github.com/bitrise-io/go-steputils/testresultexport
+# github.com/bitrise-io/go-utils v0.0.0-20210517140706-aa64fd88ca49
+## explicit
+github.com/bitrise-io/go-utils/colorstring
+github.com/bitrise-io/go-utils/command
+github.com/bitrise-io/go-utils/fileutil
+github.com/bitrise-io/go-utils/log
+github.com/bitrise-io/go-utils/parseutil
+github.com/bitrise-io/go-utils/pathutil
+github.com/bitrise-io/go-utils/pointers
+# github.com/ryanuber/go-glob v1.0.0
+## explicit
+github.com/ryanuber/go-glob

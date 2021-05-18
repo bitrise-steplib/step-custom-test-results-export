@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/bitrise-io/go-steputils/stepconf"
+	"github.com/bitrise-io/go-steputils/testresultexport"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
-	"github.com/bitrise-io/testresultexport/testresultexport"
 	"github.com/ryanuber/go-glob"
 )
 
