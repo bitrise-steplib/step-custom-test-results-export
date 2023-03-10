@@ -39,7 +39,7 @@ workflows:
         inputs:
         - test_name: test name
         - base_path: ./
-        - search_pattern: '*/*.xcresult'
+        - search_pattern: "*/*.xcresult"
         - example_step_input: Example Step Input's value
     - script:
         title: Check if export succeeded
