@@ -26,6 +26,7 @@ func main() {
 
 	log.SetEnableDebugLog(stepConf.VerboseLog)
 
+	fmt.Println()
 	log.Infof("Searching for test results")
 
 	var matches []string
