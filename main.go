@@ -8,7 +8,6 @@ import (
 
 	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-steputils/testresultexport"
-	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/ryanuber/go-glob"
 )
@@ -26,6 +25,9 @@ func main() {
 	stepconf.Print(stepConf)
 
 	log.SetEnableDebugLog(stepConf.VerboseLog)
+
+	fmt.Println()
+	log.Infof("Searching for test results")
 
 	var matches []string
 	basePath := strings.Split(stepConf.BasePath, "*")[0]
@@ -46,24 +48,36 @@ func main() {
 	}
 
 	if len(matches) < 1 {
-		failf("Pattern %s did not match any files within path %s", stepConf.SearchPattern, stepConf.BasePath)
+		failf("Provided search pattern (%s) did not match any files within %s", stepConf.SearchPattern, stepConf.BasePath)
 	}
 
 	if len(matches) > 1 {
-		log.Warnf("Pattern matched more than one file, will use the first match:")
-		for i, m := range matches {
-			template := fmt.Sprintf("- %s\n", m)
-			if i == 0 {
-				template = colorstring.Green(template)
-			}
-			log.Warnf(template)
-		}
+		warnMessage := multipleMatchesWarning(matches)
+		log.Warnf(warnMessage)
 	}
 
 	match := matches[0]
+
+	log.Donef("Exporting test result: %s", match)
+
 	exporter := testresultexport.NewExporter(stepConf.TestResultsDir)
 
 	if err := exporter.ExportTest(stepConf.TestName, match); err != nil {
 		failf("Failed to export test result: %s", err)
 	}
+}
+
+func multipleMatchesWarning(matches []string) string {
+	warnMessage := fmt.Sprintf("Provided search pattern matches %d files:\n", len(matches))
+	for i := 0; i < 5; i++ {
+		if i == len(matches) {
+			break
+		}
+
+		warnMessage += fmt.Sprintf("- %s\n", matches[i])
+	}
+	if len(matches) > 5 {
+		warnMessage += "...\n"
+	}
+	return warnMessage
 }
