@@ -1,6 +1,6 @@
 # Custom Test Results Export
 
-This step is used to search for test results and to export them for the 'Deploy to Bitrise.io' step. The deploy step can then be used to pick up results and import them into the testing add-on.
+This step is used to search for test results and to export them for the 'Deploy to Bitrise.io' step. The deploy step can then be used to pick up results and import them into the Test Reports.
 
 
 ## How to use this Step

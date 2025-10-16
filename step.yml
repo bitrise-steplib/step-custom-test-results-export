@@ -1,9 +1,9 @@
 title: |-
-  Export test results to Test Reports add-on
+  Export test results to Test Reports
 summary: |
-  This Step is used to search for test results and export them for the **Deploy to Bitrise.io** Step which can export the results to the testing add-on.
+  This Step is used to search for test results and export them for the **Deploy to Bitrise.io** Step which can export the results to the Test Reports.
 description: |
-  Not all testing Steps automatically export their results to the Test Reports add-on. This Step is designed to export the results of those Steps that do not do this automatically. The Step creates the required `test-info.json` file and deploys the test results in the correct directory for export.
+  Not all testing Steps automatically export their results to the Test Reports. This Step is designed to export the results of those Steps that do not do this automatically. The Step creates the required `test-info.json` file and deploys the test results in the correct directory for export.
 
   ### Configuring the Step
 
@@ -13,7 +13,7 @@ description: |
   - The Step knows which file to look for.
   - The Step exports to the correct directory.
 
-  1. In the **The name of the test** input, set the name you want to see in the Test Reports add-on. Each exported results file has a separate tab with the name defined here.
+  1. In the **The name of the test** input, set the name you want to see in the Test Reports. Each exported results file has a separate tab with the name defined here.
 
   2. In the **Test result base path** input, set the path where your test results can be found.
 
@@ -29,11 +29,11 @@ description: |
 
      By default, do NOT modify this input’s value. It should be set to the $BITRISE_TEST_RESULT_DIR Env Var.
 
-  5. Make sure you have a Deploy to Bitrise.io Step in your Workflow. This step is responsible for deploying the exported files from the test result directory to the Test Reports add-on.
+  5. Make sure you have a Deploy to Bitrise.io Step in your Workflow. This step is responsible for deploying the exported files from the test result directory to the Test Reports.
 
   ### Troubleshooting
 
-  - You always need a **Deploy to Bitrise.io** Step in your Workflow to export test results to the Test Reports add-on. If you can't see your results in Test Reports, check that you have the Step in your Workflow.
+  - You always need a **Deploy to Bitrise.io** Step in your Workflow to export test results to the Test Reports. If you can't see your results in Test Reports, check that you have the Step in your Workflow.
 
   - If more than one file matches the pattern set in the **Test result search pattern** input, you will receive a warning. It should only match a single file in the base path.
 
@@ -69,7 +69,7 @@ inputs:
 - test_name:
   opts:
     title: The name of the test
-    summary: Test name displayed on the tab of the Test Reports page.
+    summary: Test name displayed in the Test Reports.
     is_expand: true
     is_required: true
     value_options: []
