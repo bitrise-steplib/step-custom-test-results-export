@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-steputils/testresultexport"
+	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/ryanuber/go-glob"
 )
@@ -65,6 +67,21 @@ func main() {
 	if err := exporter.ExportTest(stepConf.TestName, match); err != nil {
 		failf("Failed to export test result: %s", err)
 	}
+
+	if strings.HasSuffix(strings.ToLower(match), ".xml") {
+		attachments, err := examineAttachmentsInJUnitXML(match)
+		if err != nil {
+			failf("Failed to examine attachments in JUnit XML: %s", err)
+		}
+
+		if len(attachments) > 0 {
+			log.Donef("Exporting %d attachments found in JUnit XML.", len(attachments))
+			junitDir := filepath.Dir(match)
+			if err := exportAttachmentsFromJUnitXML(attachments, junitDir, stepConf.TestResultsDir); err != nil {
+				failf("Failed to export attachments from JUnit XML: %s", err)
+			}
+		}
+	}
 }
 
 func multipleMatchesWarning(matches []string) string {
@@ -80,4 +97,78 @@ func multipleMatchesWarning(matches []string) string {
 		warnMessage += "...\n"
 	}
 	return warnMessage
+}
+
+func examineAttachmentsInJUnitXML(junitXmlPath string) ([]string, error) {
+	f, err := os.Open(junitXmlPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open JUnit XML: %w", err)
+	}
+	defer f.Close()
+
+	var root xmlNode
+	if err := xml.NewDecoder(f).Decode(&root); err != nil {
+		return nil, fmt.Errorf("failed to parse XML: %w", err)
+	}
+
+	var attachments []string
+	seen := make(map[string]bool)
+	collectAttachments(&root, &attachments, seen)
+	return attachments, nil
+}
+
+type xmlNode struct {
+	XMLName  xml.Name
+	Attrs    []xml.Attr `xml:",any,attr"`
+	Children []xmlNode  `xml:",any"`
+	Content  string     `xml:",chardata"`
+}
+
+func collectAttachments(n *xmlNode, attachments *[]string, seen map[string]bool) {
+	if n.XMLName.Local == "property" {
+		var name, value string
+		for _, attr := range n.Attrs {
+			switch attr.Name.Local {
+			case "name":
+				name = attr.Value
+			case "value":
+				value = attr.Value
+			}
+		}
+		if strings.HasPrefix(name, "attachment_") && value != "" && !filepath.IsAbs(value) && !seen[value] {
+			seen[value] = true
+			*attachments = append(*attachments, value)
+		} else if filepath.IsAbs(value) {
+			log.Warnf("Skipping absolute path attachment for security reasons: %s", value)
+		}
+	}
+
+	for i := range n.Children {
+		collectAttachments(&n.Children[i], attachments, seen)
+	}
+}
+
+func exportAttachmentsFromJUnitXML(files []string, junitDir, exportPath string) error {
+	for _, file := range files {
+		srcPath := filepath.Join(junitDir, file)
+
+		if _, err := os.Stat(srcPath); err != nil {
+			log.Warnf("Attachment file not found, skipping: %s", srcPath)
+			continue
+		}
+
+		dstPath := filepath.Join(exportPath, file)
+
+		dstDir := filepath.Dir(dstPath)
+		if err := os.MkdirAll(dstDir, 0755); err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", dstDir, err)
+		}
+		if err := command.CopyFile(srcPath, dstPath); err != nil {
+			return fmt.Errorf("failed to copy attachment %s: %w", file, err)
+		}
+
+		log.Debugf("Exported attachment: %s", file)
+	}
+
+	return nil
 }
