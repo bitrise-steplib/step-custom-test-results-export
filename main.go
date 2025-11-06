@@ -77,7 +77,7 @@ func main() {
 		if len(attachments) > 0 {
 			log.Donef("Exporting %d attachments found in JUnit XML.", len(attachments))
 			junitDir := filepath.Dir(match)
-			if err := exportAttachmentsFromJUnitXML(attachments, junitDir, stepConf.TestResultsDir); err != nil {
+			if err := exportAttachmentsFromJUnitXML(attachments, junitDir, stepConf); err != nil {
 				failf("Failed to export attachments from JUnit XML: %s", err)
 			}
 		}
@@ -148,7 +148,7 @@ func collectAttachments(n *xmlNode, attachments *[]string, seen map[string]bool)
 	}
 }
 
-func exportAttachmentsFromJUnitXML(files []string, junitDir, exportPath string) error {
+func exportAttachmentsFromJUnitXML(files []string, junitDir string, stepConf config) error {
 	for _, file := range files {
 		srcPath := filepath.Join(junitDir, file)
 
@@ -157,11 +157,11 @@ func exportAttachmentsFromJUnitXML(files []string, junitDir, exportPath string) 
 			continue
 		}
 
-		dstPath := filepath.Join(exportPath, file)
+		dstPath := filepath.Join(stepConf.TestResultsDir, stepConf.TestName, file)
+		dstDir := filepath.Dir(dstPath)
 
 		log.Debugf("Exporting attachment from %s to %s", srcPath, dstPath)
 
-		dstDir := filepath.Dir(dstPath)
 		if err := os.MkdirAll(dstDir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dstDir, err)
 		}
