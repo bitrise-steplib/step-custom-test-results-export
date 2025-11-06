@@ -159,6 +159,8 @@ func exportAttachmentsFromJUnitXML(files []string, junitDir, exportPath string) 
 
 		dstPath := filepath.Join(exportPath, file)
 
+		log.Debugf("Exporting attachment from %s to %s", srcPath, dstPath)
+
 		dstDir := filepath.Dir(dstPath)
 		if err := os.MkdirAll(dstDir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dstDir, err)
@@ -166,8 +168,6 @@ func exportAttachmentsFromJUnitXML(files []string, junitDir, exportPath string) 
 		if err := command.CopyFile(srcPath, dstPath); err != nil {
 			return fmt.Errorf("failed to copy attachment %s: %w", file, err)
 		}
-
-		log.Debugf("Exported attachment: %s", file)
 	}
 
 	return nil
