@@ -1,9 +1,14 @@
 module github.com/bitrise-steplib/step-custom-test-results-export
 
-go 1.16
+go 1.21
 
 require (
-	github.com/bitrise-io/go-steputils v0.0.0-20210514150206-5b6261447e77
-	github.com/bitrise-io/go-utils v0.0.0-20210517140706-aa64fd88ca49
+	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.57
+	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.39
 	github.com/ryanuber/go-glob v1.0.0
+)
+
+require (
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 )

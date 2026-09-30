@@ -1,16 +1,23 @@
-# github.com/bitrise-io/go-steputils v0.0.0-20210514150206-5b6261447e77
-## explicit
-github.com/bitrise-io/go-steputils/stepconf
-github.com/bitrise-io/go-steputils/testresultexport
-# github.com/bitrise-io/go-utils v0.0.0-20210517140706-aa64fd88ca49
-## explicit
-github.com/bitrise-io/go-utils/colorstring
-github.com/bitrise-io/go-utils/command
-github.com/bitrise-io/go-utils/fileutil
-github.com/bitrise-io/go-utils/log
-github.com/bitrise-io/go-utils/parseutil
-github.com/bitrise-io/go-utils/pathutil
-github.com/bitrise-io/go-utils/pointers
+# github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.57
+## explicit; go 1.21
+github.com/bitrise-io/go-steputils/v2/stepconf
+github.com/bitrise-io/go-steputils/v2/testresultexport
+# github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.39
+## explicit; go 1.21
+github.com/bitrise-io/go-utils/v2/env
+github.com/bitrise-io/go-utils/v2/filedownloader
+github.com/bitrise-io/go-utils/v2/fileutil
+github.com/bitrise-io/go-utils/v2/log
+github.com/bitrise-io/go-utils/v2/log/colorstring
+github.com/bitrise-io/go-utils/v2/parseutil
+github.com/bitrise-io/go-utils/v2/pathutil
+github.com/bitrise-io/go-utils/v2/retryhttp
+# github.com/hashicorp/go-cleanhttp v0.5.2
+## explicit; go 1.13
+github.com/hashicorp/go-cleanhttp
+# github.com/hashicorp/go-retryablehttp v0.7.7
+## explicit; go 1.19
+github.com/hashicorp/go-retryablehttp
 # github.com/ryanuber/go-glob v1.0.0
 ## explicit
 github.com/ryanuber/go-glob
