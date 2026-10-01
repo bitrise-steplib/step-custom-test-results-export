@@ -8,7 +8,9 @@ import (
 	"strings"
 
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
+	"github.com/bitrise-io/go-steputils/v2/testattachment"
 	"github.com/bitrise-io/go-steputils/v2/testresultexport" //nolint:staticcheck // deprecated, but kept for this step's migration
+	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/fileutil"
 	"github.com/bitrise-io/go-utils/v2/log"
@@ -23,9 +25,10 @@ func failf(logger log.Logger, format string, args ...interface{}) {
 func main() {
 	logger := log.NewLogger()
 	fileManager := fileutil.NewFileManager()
+	envRepo := env.NewRepository()
 
 	var stepConf config
-	if err := stepconf.NewInputParser(env.NewRepository()).Parse(&stepConf); err != nil {
+	if err := stepconf.NewInputParser(envRepo).Parse(&stepConf); err != nil {
 		failf(logger, "Issue with input: %s", err)
 	}
 	stepconf.Print(stepConf)
@@ -83,6 +86,10 @@ func main() {
 				failf(logger, "Failed to export attachments from JUnit XML: %s", err)
 			}
 		}
+
+		collector := testattachment.NewCollector(command.NewFactory(envRepo), fileManager)
+		reportDir := filepath.Join(stepConf.TestResultsDir, stepConf.TestName)
+		exportConventionAttachments(logger, collector, attachmentRoot(basePath), envRepo.Get("BITRISE_TEST_DEPLOY_DIR"), match, reportDir, attachments)
 	}
 }
 

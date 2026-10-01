@@ -51,6 +51,38 @@ workflows:
               echo "Exported test results not found!"
               exit 1
             fi
+    - script:
+        title: Create a JUnit XML and an attachment named by convention
+        inputs:
+        - content: |-
+            mkdir -p ./convention/results ./convention/build/shots
+            cat > ./convention/results/junit.xml <<'EOF'
+            <testsuites>
+              <testsuite name="LoginTest">
+                <testcase classname="com.example.LoginTest" name="emptyState"/>
+              </testsuite>
+            </testsuites>
+            EOF
+            echo "screenshot" > ./convention/build/shots/com.example.LoginTest__emptyState__1.png
+    - path::./:
+        title: Step Test with an attachment named by convention
+        inputs:
+        - test_name: convention
+        - base_path: ./convention
+        - search_pattern: "*/junit.xml"
+    - script:
+        title: Check if the attachment was exported next to the test result
+        inputs:
+        - content: |-
+            FIND_ATTACHMENT="$(find $BITRISE_TEST_DEPLOY_DIR -path '*/convention/com.example.LoginTest__emptyState__1.png' -print -quit)"
+            if [ -n "$FIND_ATTACHMENT" ]
+            then
+              echo "Found exported attachment at: $FIND_ATTACHMENT"
+              exit 0
+            else
+              echo "Exported attachment not found!"
+              exit 1
+            fi
 
   generate_readme:
     steps:

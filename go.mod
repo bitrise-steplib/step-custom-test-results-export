@@ -1,9 +1,10 @@
 module github.com/bitrise-steplib/step-custom-test-results-export
 
-go 1.21
+go 1.22
 
 require (
-	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.57
+	github.com/bitrise-io/go-android/v2 v2.0.0-alpha.15
+	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.58
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.39
 	github.com/ryanuber/go-glob v1.0.0
 )

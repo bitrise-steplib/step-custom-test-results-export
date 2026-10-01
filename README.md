@@ -36,6 +36,12 @@ To use this Step to export the results of a testing Step - for example, **Flutte
 
 5. Make sure you have a Deploy to Bitrise.io Step in your Workflow. This step is responsible for deploying the exported files from the test result directory to the Test Reports.
 
+### Attachments
+
+If the exported file is a JUnit XML, the Step also exports the screenshots, recordings and logs that belong to its test cases, so they show up under the test in the Test Reports. An attachment belongs to a test case if its file name follows the `<classname>__<name>[__run<k>]__<label>.<ext>` convention, for example `com.example.LoginTest__emptyState__1.png`.
+
+The Step looks for these files only under the **Test result base path**, so make sure it covers the folder where your tests save them. Files tracked by git, such as committed reference images, are never exported.
+
 ### Troubleshooting
 
 - You always need a **Deploy to Bitrise.io** Step in your Workflow to export test results to the Test Reports. If you can't see your results in Test Reports, check that you have the Step in your Workflow.
@@ -70,8 +76,8 @@ You can also run this step directly with [Bitrise CLI](https://github.com/bitris
 | Key | Description | Flags | Default |
 | --- | --- | --- | --- |
 | `test_name` | Test name displayed in the Test Reports. | required |  |
-| `base_path` | You can provide a path to a single file or a directory path and filter for files using the **Test result search pattern** input.  This is the base path where the Step will look for your test results. We recommend using a relative path to the results:  `app/build/test-results/testDemoDebugUnitTest/`  or  `./app/build/test-results/testDemoDebugUnitTest/`  | required | `$BITRISE_SOURCE_DIR` |
-| `search_pattern` | This glob should match a single file within the provided base path. If it matches multiple files, the Step will produce a warning displaying all matches. The matched file should be in a supported format. If you set a specific file path in the **Test result base path** input, set this value to `*`.  **Examples**:  Matching all files within the base path: `*`  Matching all files within a given directory of the base path: `*/build/test-results/testDemoDebugUnitTest/*`  | required |  |
+| `base_path` | You can provide a path to a single file or a directory path and filter for files using the **Test result search pattern** input.  This is the base path where the Step will look for your test results and their attachments. We recommend using a relative path to the results:  `app/build/test-results/testDemoDebugUnitTest/`  or  `./app/build/test-results/testDemoDebugUnitTest/`  If your tests save attachments, such as screenshots, outside this folder, set a folder that contains both, for example `app/build/`. Then make the **Test result search pattern** specific enough to match a single test result.  | required | `$BITRISE_SOURCE_DIR` |
+| `search_pattern` | This glob should match a single file within the provided base path. If it matches multiple files, the Step will produce a warning displaying all matches. The matched file should be in a supported format. If you set a specific file path in the **Test result base path** input, set this value to `*`.  **Examples**:  Matching all files within the base path: `*`  Matching all files within a given directory of the base path: `*/build/test-results/testDemoDebugUnitTest/*`  Matching a single JUnit XML when the base path is a wider folder, such as `app/build/`: `*/test-results/testDemoDebugUnitTest/TEST-*.xml`  | required |  |
 | `bitrise_test_result_dir` | Root directory for all test results created by the Bitrise CLI | required | `$BITRISE_TEST_RESULT_DIR` |
 | `verbose_log` | Enable verbose logging? | required | `no` |
 </details>
