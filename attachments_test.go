@@ -85,6 +85,36 @@ func Test_exportConventionAttachments_missingDeployDir(t *testing.T) {
 	assertTestFile(t, filepath.Join(reportDir, "com.example.LoginTest__emptyState__1.png"), "screenshot")
 }
 
+func Test_exportConventionAttachments_relativeRootSkipsDeployDir(t *testing.T) {
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(wd) })
+
+	junitPath := filepath.Join("results", "junit.xml")
+	writeTestFile(t, junitPath, loginJUnitXML)
+	deployDir := filepath.Join(dir, "deploy")
+	writeTestFile(t, filepath.Join(deployDir, "step_1", "tests", "com.example.LoginTest__emptyState__1.png"), "screenshot")
+	reportDir := newReportDir(t)
+	var logs bytes.Buffer
+	logger := log.NewLogger(log.WithOutput(&logs))
+	logger.EnableDebugLog(true)
+
+	exportConventionAttachments(logger, newTestCollector(), attachmentRoot("."), deployDir, junitPath, reportDir, nil)
+
+	if strings.Contains(logs.String(), "deploy") {
+		t.Errorf("the deploy dir should not be walked, got logs: %s", logs.String())
+	}
+}
+
 func Test_attachmentRoot(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "junit.xml")

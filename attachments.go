@@ -47,11 +47,11 @@ func exportConventionAttachments(logger log.Logger, collector testattachment.Col
 }
 
 func attachmentRoot(basePath string) string {
-	info, err := os.Stat(basePath)
-	if err == nil && !info.IsDir() {
-		return filepath.Dir(basePath)
+	root := basePath
+	if info, err := os.Stat(basePath); err == nil && !info.IsDir() {
+		root = filepath.Dir(basePath)
 	}
-	return basePath
+	return absPath(root)
 }
 
 func readJUnitReport(path string) (testreport.TestReport, error) {
