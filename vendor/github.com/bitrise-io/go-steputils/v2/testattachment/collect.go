@@ -21,6 +21,9 @@ var (
 	ErrDuplicateName = errors.New("more than one file has this name")
 	// ErrAlreadyExported is returned for a file that an earlier step already exported unchanged.
 	ErrAlreadyExported = errors.New("file was already exported by an earlier step")
+	// ErrDuplicateCopy is returned for a file that has the same name and size as another collected file,
+	// or as a file an earlier step already exported.
+	ErrDuplicateCopy = errors.New("copy of another file with the same name and size")
 )
 
 // Skipping these only saves time: they hold dependencies, never test output.
@@ -41,6 +44,7 @@ var skippedDirNames = map[string]bool{
 type Candidate struct {
 	Path  string
 	Match Match
+	info  fs.FileInfo
 }
 
 // Skipped is a file that follows the naming convention but is not attached, a folder that could
@@ -73,6 +77,7 @@ func NewCollector(cmdFactory command.Factory, fileManager fileutil.FileManager) 
 // Collect walks root and returns the files that belong to a test case of idx. Dependency folders,
 // deployDir (where earlier steps exported their files), unreadable folders, files tracked by git,
 // files an earlier step already exported unchanged and file names found more than once are left out.
+// Of files with the same name and size, only the first by path is kept.
 func (c Collector) Collect(root, deployDir string, idx Index) (CollectResult, error) {
 	var result CollectResult
 	var matched []Candidate
@@ -102,7 +107,12 @@ func (c Collector) Collect(root, deployDir string, idx Index) (CollectResult, er
 			result.Skipped = append(result.Skipped, Skipped{Path: path, Reason: err})
 			return nil
 		}
-		matched = append(matched, Candidate{Path: path, Match: match})
+		info, err := os.Stat(path)
+		if err != nil {
+			result.Skipped = append(result.Skipped, Skipped{Path: path, Reason: err})
+			return nil
+		}
+		matched = append(matched, Candidate{Path: path, Match: match, info: info})
 		return nil
 	})
 	if err != nil {
@@ -126,11 +136,15 @@ func (c Collector) Collect(root, deployDir string, idx Index) (CollectResult, er
 		}
 	}
 
-	fresh, skipped, err := skipExported(deployDir, untracked)
+	fresh, exported, err := skipExported(deployDir, untracked)
 	if err != nil {
 		return CollectResult{}, err
 	}
-	result.Skipped = append(result.Skipped, skipped...)
+	for _, candidate := range exported {
+		result.Skipped = append(result.Skipped, Skipped{Path: candidate.Path, Reason: ErrAlreadyExported})
+	}
+	fresh, copies := withoutCopiesOfExported(fresh, exported)
+	result.Skipped = append(result.Skipped, copies...)
 
 	byName := map[string][]Candidate{}
 	for _, candidate := range fresh {
@@ -139,15 +153,57 @@ func (c Collector) Collect(root, deployDir string, idx Index) (CollectResult, er
 	}
 	for _, name := range sortedKeys(byName) {
 		found := byName[name]
-		if len(found) > 1 {
+		if len(found) == 1 {
+			result.Candidates = append(result.Candidates, found[0])
+			continue
+		}
+		if !sameSize(found) {
 			for _, candidate := range found {
 				result.Skipped = append(result.Skipped, Skipped{Path: candidate.Path, Reason: ErrDuplicateName})
 			}
 			continue
 		}
+		sort.Slice(found, func(i, j int) bool { return found[i].Path < found[j].Path })
 		result.Candidates = append(result.Candidates, found[0])
+		for _, candidate := range found[1:] {
+			result.Skipped = append(result.Skipped, Skipped{Path: candidate.Path, Reason: ErrDuplicateCopy})
+		}
 	}
 	return result, nil
+}
+
+func withoutCopiesOfExported(fresh, exported []Candidate) ([]Candidate, []Skipped) {
+	exportedSizes := map[string]map[int64]bool{}
+	for _, candidate := range exported {
+		name := filepath.Base(candidate.Path)
+		if exportedSizes[name] == nil {
+			exportedSizes[name] = map[int64]bool{}
+		}
+		exportedSizes[name][candidate.info.Size()] = true
+	}
+	if len(exportedSizes) == 0 {
+		return fresh, nil
+	}
+
+	var kept []Candidate
+	var copies []Skipped
+	for _, candidate := range fresh {
+		if exportedSizes[filepath.Base(candidate.Path)][candidate.info.Size()] {
+			copies = append(copies, Skipped{Path: candidate.Path, Reason: ErrDuplicateCopy})
+			continue
+		}
+		kept = append(kept, candidate)
+	}
+	return kept, copies
+}
+
+func sameSize(candidates []Candidate) bool {
+	for _, candidate := range candidates[1:] {
+		if candidate.info.Size() != candidates[0].info.Size() {
+			return false
+		}
+	}
+	return true
 }
 
 func isSkippedDir(path string) bool {
@@ -214,7 +270,7 @@ func gitError(err error) error {
 // skipExported leaves out the candidates that an earlier step already exported into deployDir:
 // a file with the same name, size and modification time. CopyToReport keeps the modification
 // time, which is what makes an unchanged file recognisable.
-func skipExported(deployDir string, candidates []Candidate) ([]Candidate, []Skipped, error) {
+func skipExported(deployDir string, candidates []Candidate) ([]Candidate, []Candidate, error) {
 	exported := map[string][]fs.FileInfo{}
 	err := filepath.WalkDir(deployDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -237,15 +293,10 @@ func skipExported(deployDir string, candidates []Candidate) ([]Candidate, []Skip
 		return nil, nil, fmt.Errorf("walk %s: %w", deployDir, err)
 	}
 
-	var kept []Candidate
-	var skipped []Skipped
+	var kept, skipped []Candidate
 	for _, candidate := range candidates {
-		info, err := os.Stat(candidate.Path)
-		if err != nil {
-			return nil, nil, err
-		}
-		if isExported(info, exported[filepath.Base(candidate.Path)]) {
-			skipped = append(skipped, Skipped{Path: candidate.Path, Reason: ErrAlreadyExported})
+		if isExported(candidate.info, exported[filepath.Base(candidate.Path)]) {
+			skipped = append(skipped, candidate)
 			continue
 		}
 		kept = append(kept, candidate)
