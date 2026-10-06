@@ -83,6 +83,40 @@ workflows:
               echo "Exported attachment not found!"
               exit 1
             fi
+    - script:
+        title: Create one JUnit XML per test class and an attachment for each, as Gradle and Roborazzi do
+        inputs:
+        - content: |-
+            results=./gradle/app/build/test-results/testDebugUnitTest
+            mkdir -p $results/binary ./gradle/app/build/outputs/roborazzi
+            for class in LoginTest HomeTest; do
+              cat > $results/TEST-com.example.$class.xml <<EOF
+            <testsuite name="com.example.$class">
+              <testcase classname="com.example.$class" name="renders"/>
+            </testsuite>
+            EOF
+              echo "screenshot" > ./gradle/app/build/outputs/roborazzi/com.example.${class}__renders__1.png
+            done
+            echo "binary" > $results/binary/output.bin
+    - path::./:
+        title: Step Test exporting every JUnit XML match
+        inputs:
+        - test_name: gradle
+        - base_path: ./gradle/app/build
+        - search_pattern: "*/test-results/testDebugUnitTest/TEST-*.xml"
+        - export_all_matches: "yes"
+    - script:
+        title: Check if every test result and attachment was exported into the same report
+        inputs:
+        - content: |-
+            report="$(find $BITRISE_TEST_DEPLOY_DIR -type d -name gradle -print -quit)"
+            for file in TEST-com.example.LoginTest.xml TEST-com.example.HomeTest.xml com.example.LoginTest__renders__1.png com.example.HomeTest__renders__1.png; do
+              if [ ! -f "$report/$file" ]; then
+                echo "$file was not exported into $report!"
+                exit 1
+              fi
+            done
+            echo "Found every test result and attachment in $report"
 
   generate_readme:
     steps:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bitrise-io/go-android/v2/testresult/junitxml"
 	"github.com/bitrise-io/go-steputils/v2/testattachment"
@@ -13,10 +14,11 @@ import (
 )
 
 // exportConventionAttachments copies the files under root that are named after a test case of the
-// JUnit XML at junitPath into reportDir, where the deploy step links them to their test case.
-// Problems are logged as warnings: the test result itself is already exported.
-func exportConventionAttachments(logger log.Logger, collector testattachment.Collector, root, deployDir, junitPath, reportDir string, referenced []string) {
-	report, err := readJUnitReport(junitPath)
+// JUnit XMLs at junitPaths into reportDir, where the deploy step links them to their test case.
+// The XMLs are indexed together, the same way the deploy step reads a report folder. Problems are
+// logged as warnings: the test results themselves are already exported.
+func exportConventionAttachments(logger log.Logger, collector testattachment.Collector, root, deployDir string, junitPaths []string, reportDir string, referenced []string) {
+	report, err := readJUnitReport(junitPaths...)
 	if err != nil {
 		logger.Warnf("Failed to read test cases, attachments are not matched by file name: %s", err)
 		return
@@ -35,7 +37,7 @@ func exportConventionAttachments(logger log.Logger, collector testattachment.Col
 	}
 	logSkippedAttachments(logger, result.Skipped)
 
-	candidates := withoutReferenced(result.Candidates, filepath.Dir(junitPath), referenced)
+	candidates := withoutReferenced(result.Candidates, referenced)
 	if len(candidates) == 0 {
 		return
 	}
@@ -54,10 +56,10 @@ func attachmentRoot(basePath string) string {
 	return absPath(root)
 }
 
-func readJUnitReport(path string) (testreport.TestReport, error) {
+func readJUnitReport(paths ...string) (testreport.TestReport, error) {
 	var converter junitxml.Converter
-	if !converter.Detect([]string{path}) {
-		return testreport.TestReport{}, fmt.Errorf("%s is not a JUnit XML", path)
+	if !converter.Detect(paths) {
+		return testreport.TestReport{}, fmt.Errorf("%s is not a JUnit XML", strings.Join(paths, ", "))
 	}
 	return converter.Convert()
 }
@@ -77,16 +79,26 @@ func logSkippedAttachments(logger log.Logger, skipped []testattachment.Skipped) 
 	}
 }
 
-// withoutReferenced leaves out the files that the XML already references with an attachment_*
+// referencedPaths resolves the attachment_* values of the JUnit XML at junitPath, which are
+// relative to the XML's folder.
+func referencedPaths(junitPath string, values []string) []string {
+	paths := make([]string, 0, len(values))
+	for _, value := range values {
+		paths = append(paths, filepath.Join(filepath.Dir(junitPath), value))
+	}
+	return paths
+}
+
+// withoutReferenced leaves out the files that an XML already references with an attachment_*
 // property. They are exported under their relative path, and a second copy in the report folder
 // would be linked again by the deploy step.
-func withoutReferenced(candidates []testattachment.Candidate, junitDir string, referenced []string) []testattachment.Candidate {
+func withoutReferenced(candidates []testattachment.Candidate, referenced []string) []testattachment.Candidate {
 	if len(referenced) == 0 {
 		return candidates
 	}
 	paths := map[string]bool{}
-	for _, value := range referenced {
-		paths[absPath(filepath.Join(junitDir, value))] = true
+	for _, path := range referenced {
+		paths[absPath(path)] = true
 	}
 
 	var kept []testattachment.Candidate
