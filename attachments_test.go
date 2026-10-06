@@ -37,6 +37,18 @@ func Test_exportConventionAttachments(t *testing.T) {
 	assertTestFile(t, filepath.Join(reportDir, "com.example.LoginTest__emptyState__1.png"), "screenshot")
 }
 
+func Test_exportConventionAttachments_uppercaseExtension(t *testing.T) {
+	root := t.TempDir()
+	junitPath := filepath.Join(root, "results", "TEST-Login.XML")
+	writeTestFile(t, junitPath, loginJUnitXML)
+	writeTestFile(t, filepath.Join(root, "build", "shots", "com.example.LoginTest__emptyState__1.png"), "screenshot")
+	reportDir := newReportDir(t)
+
+	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), []string{junitPath}, reportDir, nil)
+
+	assertTestFile(t, filepath.Join(reportDir, "com.example.LoginTest__emptyState__1.png"), "screenshot")
+}
+
 func Test_exportConventionAttachments_skipsReferencedFiles(t *testing.T) {
 	root := t.TempDir()
 	junitPath := filepath.Join(root, "junit.xml")
