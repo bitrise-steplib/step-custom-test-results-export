@@ -25,13 +25,20 @@ func junitResults(logger log.Logger, matches []string) []string {
 	}
 
 	var results []string
+	names := map[string]bool{}
 	for _, match := range matches {
+		name := filepath.Base(match)
+		if names[name] {
+			logger.Warnf("Skipping %s: a test result with the same file name is already exported", match)
+			continue
+		}
 		// A file that isn't a JUnit XML would make Deploy to Bitrise.io drop every report of the build.
 		if _, err := readJUnitReport(match); err != nil {
 			logger.Warnf("Skipping %s: not a JUnit XML", match)
 			logger.Debugf("%s", err)
 			continue
 		}
+		names[name] = true
 		results = append(results, match)
 	}
 	if len(results) == 0 {
@@ -45,24 +52,12 @@ func junitResults(logger log.Logger, matches []string) []string {
 func exportJUnitResults(logger log.Logger, fileManager fileutil.FileManager, envRepo env.Repository, stepConf config, basePath string, results []string) {
 	logger.Donef("Exporting %d test results:", len(results))
 	reportDir := filepath.Join(stepConf.TestResultsDir, stepConf.TestName)
-	root := attachmentRoot(basePath)
 
 	exporter := testresultexport.NewExporter(stepConf.TestResultsDir, fileManager)
-	exportedNames := map[string]bool{}
 	var referenced []string
 	for _, result := range results {
-		name := filepath.Base(result)
-		if exportedNames[name] {
-			name = flattenedPath(root, result)
-		}
-		exportedNames[name] = true
-		logger.Printf("- %s => %s", result, name)
-
-		if name == filepath.Base(result) {
-			if err := exporter.ExportTest(stepConf.TestName, result); err != nil {
-				failf(logger, "Failed to export test result: %s", err)
-			}
-		} else if err := fileManager.CopyFile(result, filepath.Join(reportDir, name), &fileutil.CopyOptions{Overwrite: true}); err != nil {
+		logger.Printf("- %s", result)
+		if err := exporter.ExportTest(stepConf.TestName, result); err != nil {
 			failf(logger, "Failed to export test result: %s", err)
 		}
 
@@ -80,16 +75,5 @@ func exportJUnitResults(logger log.Logger, fileManager fileutil.FileManager, env
 	}
 
 	collector := testattachment.NewCollector(command.NewFactory(envRepo), fileManager)
-	exportConventionAttachments(logger, collector, root, envRepo.Get("BITRISE_TEST_DEPLOY_DIR"), results, reportDir, referenced)
-}
-
-// flattenedPath names a test result after its path under root, for example
-// app-build-test-results-testReleaseUnitTest-TEST-LoginTest.xml, when its own name is already taken
-// in the report folder.
-func flattenedPath(root, path string) string {
-	rel, err := filepath.Rel(root, absPath(path))
-	if err != nil || strings.HasPrefix(rel, "..") {
-		rel = path
-	}
-	return strings.ReplaceAll(strings.TrimPrefix(filepath.ToSlash(rel), "/"), "/", "-")
+	exportConventionAttachments(logger, collector, attachmentRoot(basePath), envRepo.Get("BITRISE_TEST_DEPLOY_DIR"), results, reportDir, referenced)
 }

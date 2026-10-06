@@ -125,7 +125,7 @@ inputs:
 
       This applies only when every match is an XML file. If a match is a folder or another kind of file, the Step exports only the first match, as it does when this input is turned off. Matched XML files that aren't JUnit XMLs are skipped with a warning.
 
-      Match the results of a single test task, for example `testDemoDebugUnitTest`. The same test class from two tasks shows up twice in the report, and its attachments are not linked.
+      Match the results of a single test task, for example `testDemoDebugUnitTest`. A test result with the same file name as one that is already exported, such as the same test class from another task, is skipped with a warning.
     is_required: true
     value_options:
     - "yes"
