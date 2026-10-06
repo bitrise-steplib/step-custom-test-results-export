@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bitrise-io/go-utils/v2/fileutil"
 )
@@ -44,7 +45,8 @@ func NewExporter(exportPath string, fileManager fileutil.FileManager) *Exporter 
 
 // ExportTest copies the test result at testResultPath, a file (e.g. a JUnit XML) or a directory
 // (e.g. an .xcresult bundle), into <exportPath>/<name>/ under its own name, and writes a sidecar
-// test-info.json describing it. An earlier export under the same name is overwritten.
+// test-info.json describing it. A directory path ending in a separator is exported by its
+// contents instead. An earlier export under the same name is overwritten.
 func (e *Exporter) ExportTest(name, testResultPath string) error {
 	exportDir := filepath.Join(e.exportPath, name)
 
@@ -65,10 +67,15 @@ func (e *Exporter) ExportTest(name, testResultPath string) error {
 	if err != nil {
 		return fmt.Errorf("skipping test result (%s): %w", testResultPath, err)
 	}
-	// The v1 exporter ran `rsync -ar <testResultPath> <exportDir>`, which copies the path itself,
-	// not its contents. Consumers rely on that: a .xcresult must stay a bundle to be detected.
+	// The v1 exporter ran `rsync -ar <testResultPath> <exportDir>`, and consumers rely on both of its
+	// cases: without a trailing slash it copies the path itself, so a .xcresult stays a bundle and is
+	// detected; with one it copies the contents, so the JUnit XMLs of a results folder land where the
+	// deploy step looks for them, one level deep.
 	dst := filepath.Join(exportDir, filepath.Base(testResultPath))
 	opts := &fileutil.CopyOptions{Overwrite: true}
+	if info.IsDir() && strings.HasSuffix(testResultPath, string(filepath.Separator)) {
+		dst = exportDir
+	}
 	if info.IsDir() {
 		return e.fileManager.CopyDir(testResultPath, dst, opts)
 	}
