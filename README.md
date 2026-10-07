@@ -26,7 +26,7 @@ To use this Step to export the results of a testing Step - for example, **Flutte
 
 3. In the **Test result search pattern** input, set a glob pattern that matches your test result files.
 
-   This search pattern is used to search every file and folder of the provided base path which was set in the **Test result base path** input. If every match is a JUnit XML file, the Step exports all of them into the same test report, for example the separate XML that Gradle writes for each test class. Otherwise, you will receive a warning and the Step will export the first match.
+   This search pattern is used to search every file and folder of the provided base path which was set in the **Test result base path** input. If every match is an XML file, the Step exports all the JUnit XMLs among them into the same test report, for example the separate XML that Gradle writes for each test class, and skips the other XML files with a warning. If the matches include a folder or another kind of file, you will receive a warning and the Step will export the first match.
 
    If you set a specific file path in the previous input, just set `*` here.
 
@@ -46,7 +46,7 @@ The Step looks for these files only under the **Test result base path**, so make
 
 - You always need a **Deploy to Bitrise.io** Step in your Workflow to export test results to the Test Reports. If you can't see your results in Test Reports, check that you have the Step in your Workflow.
 
-- If the pattern set in the **Test result search pattern** input matches more than one file, and not all of them are JUnit XML files (for example a folder or an `.xcresult` bundle is among them), you will receive a warning and only the first match is exported. Make the pattern match a single file, or JUnit XML files only.
+- If the pattern set in the **Test result search pattern** input matches more than one file, and not all of them are XML files (for example a folder or an `.xcresult` bundle is among them), you will receive a warning and only the first match is exported. Make the pattern match a single file, or XML files only.
 
 - If either the **Test result base path** input or the **Test result search pattern** input isn't set correctly or if either is left empty, the Step will fail.
 
@@ -77,7 +77,7 @@ You can also run this step directly with [Bitrise CLI](https://github.com/bitris
 | --- | --- | --- | --- |
 | `test_name` | Test name displayed in the Test Reports. | required |  |
 | `base_path` | You can provide a path to a single file or a directory path and filter for files using the **Test result search pattern** input.  This is the base path where the Step will look for your test results and their attachments. We recommend using a relative path to the results:  `app/build/test-results/testDemoDebugUnitTest/`  or  `./app/build/test-results/testDemoDebugUnitTest/`  If your tests save attachments, such as screenshots, outside this folder, set a folder that contains both, for example `app/build/`. Then make the **Test result search pattern** specific enough to match only the test results, for example `*/test-results/testDemoDebugUnitTest/TEST-*.xml`.  | required | `$BITRISE_SOURCE_DIR` |
-| `search_pattern` | This glob should match your test result files within the provided base path. If it matches more than one file and every match is a JUnit XML file, the Step exports all of them into the same test report. XML files that aren't JUnit XMLs are skipped with a warning. So is a file with the same name as one that is already exported, such as the same test class from another Gradle task, so match the results of a single test task. If the matches include a folder or another kind of file, the Step will produce a warning displaying all matches, and export only the first one. The matched file should be in a supported format. If you set a specific file path in the **Test result base path** input, set this value to `*`.  **Examples**:  Matching all files within the base path: `*`  Matching the JUnit XMLs of a Gradle test task, also when the base path is a wider folder, such as `app/build/`: `*/test-results/testDemoDebugUnitTest/TEST-*.xml`  | required |  |
+| `search_pattern` | This glob should match your test result files within the provided base path. If it matches more than one file and every match is an XML file, the Step exports all the JUnit XMLs among them into the same test report. XML files that aren't JUnit XMLs are skipped with a warning. So is a file with the same name as one that is already exported, such as the same test class from another Gradle task, so match the results of a single test task. If the matches include a folder or another kind of file, the Step will produce a warning displaying all matches, and export only the first one. The matched file should be in a supported format. If you set a specific file path in the **Test result base path** input, set this value to `*`.  **Examples**:  Matching all files within the base path: `*`  Matching the JUnit XMLs of a Gradle test task, also when the base path is a wider folder, such as `app/build/`: `*/test-results/testDemoDebugUnitTest/TEST-*.xml`  | required |  |
 | `bitrise_test_result_dir` | Root directory for all test results created by the Bitrise CLI | required | `$BITRISE_TEST_RESULT_DIR` |
 | `verbose_log` | Enable verbose logging? | required | `no` |
 </details>
