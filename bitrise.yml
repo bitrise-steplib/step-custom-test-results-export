@@ -104,7 +104,6 @@ workflows:
         - test_name: gradle
         - base_path: ./gradle/app/build
         - search_pattern: "*/test-results/testDebugUnitTest/TEST-*.xml"
-        - export_all_matches: "yes"
     - script:
         title: Check if every test result and attachment was exported into the same report
         inputs:

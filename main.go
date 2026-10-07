@@ -60,7 +60,7 @@ func main() {
 		failf(logger, "Provided search pattern (%s) did not match any files within %s", stepConf.SearchPattern, stepConf.BasePath)
 	}
 
-	if stepConf.ExportAllMatches && len(matches) > 1 {
+	if len(matches) > 1 {
 		if results := junitResults(logger, matches); len(results) > 0 {
 			exportJUnitResults(logger, fileManager, envRepo, stepConf, basePath, results)
 			return

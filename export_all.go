@@ -19,7 +19,7 @@ import (
 func junitResults(logger log.Logger, matches []string) []string {
 	for _, match := range matches {
 		if info, err := os.Stat(match); err != nil || info.IsDir() || !strings.HasSuffix(strings.ToLower(match), ".xml") {
-			logger.Warnf("Not every match is a JUnit XML file (%s), so only the first match is exported. To export every match, make the search pattern match JUnit XML files only, for example TEST-*.xml.", match)
+			logger.Debugf("Not every match is a JUnit XML file (%s), so only the first match is exported", match)
 			return nil
 		}
 	}
