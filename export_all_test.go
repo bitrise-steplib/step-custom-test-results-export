@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/bitrise-io/go-utils/v2/env"
@@ -46,6 +49,37 @@ func Test_junitResults(t *testing.T) {
 				t.Errorf("junitResults() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func Test_junitResults_summarizesSkippedFiles(t *testing.T) {
+	dir := t.TempDir()
+	home := filepath.Join(dir, "TEST-com.example.HomeTest.xml")
+	writeTestFile(t, home, homeJUnitXML)
+	matches := []string{home}
+	for i := 0; i < 3; i++ {
+		layout := filepath.Join(dir, "res", fmt.Sprintf("layout_%d.xml", i))
+		writeTestFile(t, layout, `<LinearLayout/>`)
+		matches = append(matches, layout)
+	}
+	sameName := filepath.Join(dir, "testReleaseUnitTest", "TEST-com.example.HomeTest.xml")
+	writeTestFile(t, sameName, homeJUnitXML)
+	matches = append(matches, sameName)
+	var logs bytes.Buffer
+
+	results := junitResults(log.NewLogger(log.WithOutput(&logs)), matches)
+
+	if !reflect.DeepEqual(results, []string{home}) {
+		t.Errorf("junitResults() = %v, want %v", results, []string{home})
+	}
+	out := logs.String()
+	for _, want := range []string{"Skipped 3 of the matched XML files (not JUnit XMLs)", "Skipped 1 of the matched XML files (a test result with the same file name is already exported)"} {
+		if strings.Count(out, want) != 1 {
+			t.Errorf("expected one %q line, got logs:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "layout_") || strings.Contains(out, "LinearLayout") {
+		t.Errorf("skipped files should only be listed in the debug log, got logs:\n%s", out)
 	}
 }
 

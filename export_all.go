@@ -24,18 +24,17 @@ func junitResults(logger log.Logger, matches []string) []string {
 		}
 	}
 
-	var results []string
+	var results, notJUnit, sameName []string
 	names := map[string]bool{}
 	for _, match := range matches {
 		name := filepath.Base(match)
 		if names[name] {
-			logger.Warnf("Skipping %s: a test result with the same file name is already exported", match)
+			sameName = append(sameName, match)
 			continue
 		}
 		// A file that isn't a JUnit XML would make Deploy to Bitrise.io drop every report of the build.
 		if _, err := readJUnitReport(match); err != nil {
-			logger.Warnf("Skipping %s: not a JUnit XML", match)
-			logger.Debugf("%s", err)
+			notJUnit = append(notJUnit, match)
 			continue
 		}
 		names[name] = true
@@ -43,8 +42,22 @@ func junitResults(logger log.Logger, matches []string) []string {
 	}
 	if len(results) == 0 {
 		logger.Warnf("None of the matches is a JUnit XML, so only the first match is exported.")
+		return nil
 	}
+	logSkippedMatches(logger, notJUnit, "not JUnit XMLs")
+	logSkippedMatches(logger, sameName, "a test result with the same file name is already exported")
 	return results
+}
+
+// A broad pattern can skip thousands of files, so only the count is a warning.
+func logSkippedMatches(logger log.Logger, paths []string, reason string) {
+	if len(paths) == 0 {
+		return
+	}
+	logger.Warnf("Skipped %d of the matched XML files (%s). Turn on verbose logging to list them.", len(paths), reason)
+	for _, path := range paths {
+		logger.Debugf("- %s", path)
+	}
 }
 
 // exportJUnitResults exports every JUnit XML into the same report folder, so they show up as one
