@@ -88,7 +88,7 @@ workflows:
         inputs:
         - content: |-
             results=./gradle/app/build/test-results/testDebugUnitTest
-            mkdir -p $results/binary ./gradle/app/build/outputs/roborazzi
+            mkdir -p $results ./gradle/app/build/outputs/roborazzi
             for class in LoginTest HomeTest; do
               cat > $results/TEST-com.example.$class.xml <<EOF
             <testsuite name="com.example.$class">
@@ -97,7 +97,6 @@ workflows:
             EOF
               echo "screenshot" > ./gradle/app/build/outputs/roborazzi/com.example.${class}__renders__1.png
             done
-            echo "binary" > $results/binary/output.bin
     - path::./:
         title: Step Test exporting every JUnit XML match
         inputs:
