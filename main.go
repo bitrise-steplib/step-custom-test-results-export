@@ -65,9 +65,6 @@ func main() {
 			exportJUnitResults(logger, fileManager, envRepo, stepConf, basePath, results)
 			return
 		}
-	}
-
-	if len(matches) > 1 {
 		logger.Warnf("%s", multipleMatchesWarning(matches))
 	}
 
