@@ -41,7 +41,7 @@ func junitResults(logger log.Logger, matches []string) []string {
 		results = append(results, match)
 	}
 	if len(results) == 0 {
-		logger.Warnf("None of the matches is a JUnit XML, so only the first match is exported.")
+		logger.Debugf("None of the matches is a JUnit XML, so only the first match is exported")
 		return nil
 	}
 	logSkippedMatches(logger, notJUnit, "not JUnit XMLs")
