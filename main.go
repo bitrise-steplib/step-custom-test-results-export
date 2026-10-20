@@ -61,6 +61,10 @@ func main() {
 	}
 
 	if len(matches) > 1 {
+		if results := junitResults(logger, matches); len(results) > 0 {
+			exportJUnitResults(logger, fileManager, envRepo, stepConf, basePath, results)
+			return
+		}
 		logger.Warnf("%s", multipleMatchesWarning(matches))
 	}
 
@@ -89,7 +93,7 @@ func main() {
 
 		collector := testattachment.NewCollector(command.NewFactory(envRepo), fileManager)
 		reportDir := filepath.Join(stepConf.TestResultsDir, stepConf.TestName)
-		exportConventionAttachments(logger, collector, attachmentRoot(basePath), envRepo.Get("BITRISE_TEST_DEPLOY_DIR"), match, reportDir, attachments)
+		exportConventionAttachments(logger, collector, attachmentRoot(basePath), envRepo.Get("BITRISE_TEST_DEPLOY_DIR"), []string{match}, reportDir, referencedPaths(match, attachments))
 	}
 }
 

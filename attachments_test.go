@@ -32,7 +32,7 @@ func Test_exportConventionAttachments(t *testing.T) {
 	writeTestFile(t, filepath.Join(root, "build", "shots", "com.example.LoginTest__emptyState__1.png"), "screenshot")
 	reportDir := newReportDir(t)
 
-	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), junitPath, reportDir, nil)
+	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), []string{junitPath}, reportDir, nil)
 
 	assertTestFile(t, filepath.Join(reportDir, "com.example.LoginTest__emptyState__1.png"), "screenshot")
 }
@@ -44,7 +44,7 @@ func Test_exportConventionAttachments_uppercaseExtension(t *testing.T) {
 	writeTestFile(t, filepath.Join(root, "build", "shots", "com.example.LoginTest__emptyState__1.png"), "screenshot")
 	reportDir := newReportDir(t)
 
-	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), junitPath, reportDir, nil)
+	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), []string{junitPath}, reportDir, nil)
 
 	assertTestFile(t, filepath.Join(reportDir, "com.example.LoginTest__emptyState__1.png"), "screenshot")
 }
@@ -56,7 +56,7 @@ func Test_exportConventionAttachments_skipsReferencedFiles(t *testing.T) {
 	writeTestFile(t, filepath.Join(root, "shots", "com.example.LoginTest__wrongPassword__1.png"), "screenshot")
 	reportDir := newReportDir(t)
 
-	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), junitPath, reportDir, []string{"shots/com.example.LoginTest__wrongPassword__1.png"})
+	exportConventionAttachments(log.NewLogger(), newTestCollector(), root, t.TempDir(), []string{junitPath}, reportDir, referencedPaths(junitPath, []string{"shots/com.example.LoginTest__wrongPassword__1.png"}))
 
 	if _, err := os.Stat(filepath.Join(reportDir, "com.example.LoginTest__wrongPassword__1.png")); !os.IsNotExist(err) {
 		t.Errorf("referenced attachment should not be copied again, got %v", err)
@@ -71,7 +71,7 @@ func Test_exportConventionAttachments_invalidXML(t *testing.T) {
 	reportDir := newReportDir(t)
 	var logs bytes.Buffer
 
-	exportConventionAttachments(log.NewLogger(log.WithOutput(&logs)), newTestCollector(), root, t.TempDir(), junitPath, reportDir, nil)
+	exportConventionAttachments(log.NewLogger(log.WithOutput(&logs)), newTestCollector(), root, t.TempDir(), []string{junitPath}, reportDir, nil)
 
 	if !strings.Contains(logs.String(), "Failed to read test cases") {
 		t.Errorf("expected a warning about the XML, got logs: %s", logs.String())
@@ -89,7 +89,7 @@ func Test_exportConventionAttachments_missingDeployDir(t *testing.T) {
 	reportDir := newReportDir(t)
 	var logs bytes.Buffer
 
-	exportConventionAttachments(log.NewLogger(log.WithOutput(&logs)), newTestCollector(), root, "", junitPath, reportDir, nil)
+	exportConventionAttachments(log.NewLogger(log.WithOutput(&logs)), newTestCollector(), root, "", []string{junitPath}, reportDir, nil)
 
 	if !strings.Contains(logs.String(), "BITRISE_TEST_DEPLOY_DIR is not set") {
 		t.Errorf("expected a warning about the deploy dir, got logs: %s", logs.String())
@@ -120,7 +120,7 @@ func Test_exportConventionAttachments_relativeRootSkipsDeployDir(t *testing.T) {
 	logger := log.NewLogger(log.WithOutput(&logs))
 	logger.EnableDebugLog(true)
 
-	exportConventionAttachments(logger, newTestCollector(), attachmentRoot("."), deployDir, junitPath, reportDir, nil)
+	exportConventionAttachments(logger, newTestCollector(), attachmentRoot("."), deployDir, []string{junitPath}, reportDir, nil)
 
 	if strings.Contains(logs.String(), "deploy") {
 		t.Errorf("the deploy dir should not be walked, got logs: %s", logs.String())
